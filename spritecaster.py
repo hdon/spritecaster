@@ -17,7 +17,8 @@ def identify_rect(image, colorkey, pos):
     '''Returns (x,y),(w,h) for a the largest rectangular perimeter
     containing at least one non-transparent pixel, but which is smaller
     than the smallest rectangular perimeter containing only transparent
-    pixels, such that both rectangles also contain the position `pos`'''
+    pixels, such that the pixel at position `pos` is contained in the
+    first rectangle, and the first rectangle is contained in the second'''
     r = image.get_rect()
     x, y = pos
     x1, y1, x2, y2 = x, y, x+1, y+1
