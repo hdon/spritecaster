@@ -46,11 +46,16 @@ def identify_rect(image, colorkey, pos):
 #    def floodfill(x,y):
 #        if floodfill(
         
+def usage_exit():
+    raise SystemExit("usage: %s <image>" % sys.argv[0])
 
 def main():
     pygame.init()
-    filename = sys.argv[1]
-    if not filename: raise SystemExit("usage: %s <image>" % sys.argv[0])
+
+    try: filename = sys.argv[1]
+    except IndexError: usage_exit()
+    if not filename: usage_exit()
+
     image = pygame.image.load(filename)
     rect = image.get_rect()
     pygame.display.set_mode(image.get_size())
