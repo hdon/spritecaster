@@ -1,4 +1,6 @@
-Currently 'Spritecaster' consists of a single unfinished tool:
+Currently 'Spritecaster' consists of a single unfinished tool.
+
+Requires pygame http://www.pygame.org/
 
 spritecaster.py [filename]
 
