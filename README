@@ -6,5 +6,12 @@ There is a lot of free artwork out there to be had for game designers, but it is
 
 TODO
 
-Add sprite export function
+ - Add sprite export function
+ - Make highlighting clearer when highlighting a region with a perfectly rectangular border
+
+Quick demonstration:
+
+wget "http://sprites-inc.co.uk/files/Ryuusei/Ryuusei2/People/MainPeople/UshijimaGontaaga.png"
+python spritecaster.py UshijimaGontaaga.png
+# Now click on each man in the picture
 
