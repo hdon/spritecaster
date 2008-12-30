@@ -1,0 +1,10 @@
+Currently 'Spritecaster' consists of a single unfinished tool:
+
+spritecaster.py [filename]
+
+There is a lot of free artwork out there to be had for game designers, but it is often not machine-friendly, and it requires a lot of elbow grease to get them that way. This tool, so far, let's you click with your mouse on any area of the image you've loaded, and it does its best to identify the sprite you've picked by searching for a rectangular area.
+
+TODO
+
+Add sprite export function
+
