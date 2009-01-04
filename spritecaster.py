@@ -3,8 +3,52 @@ bgcolor = 200,255,200
 boxcolor = 255,255,255
 wirecolor = 0,255,255
 
-import pygame, sys, os, inspect
-from pygame.locals import *
+import gtk, gtk.glade as glade
+
+class Application(object):
+    def __init__(self):
+        self.glade = glade.XML('spritecaster.glade')
+        self.glade.signal_autoconnect({
+            'on_window1_delete_event':      self.delete_event,
+            'on_window1_destroy_event':     self.destroy,
+            'on_auto_button_toggled':       self.auto_tool_button,
+            'on_div_tool_button_toggled':   self.div_tool_button,
+            'on_select_tool_button_toggled':self.select_tool_button,
+            'on_drawingarea1_expose_event': self.draw_area_draw,
+            'on_open_command':              self.do_open,
+        })
+
+    pic = None
+    def draw_area_draw(self, widget, event, data=None):
+        if self.pic:
+            area = event.area
+            widget.window.draw_pixbuf(widget.window.new_gc(), self.pic,
+                area.x, area.y, area.x, area.y, area.width, area.height)
+
+    def main(self):
+        gtk.main()
+
+    def do_open(self, widget, *data):
+        dialog = self.glade.get_widget('filechooserdialog1')
+        response = dialog.run()
+        dialog.hide()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            self.pic = gtk.gdk.pixbuf_new_from_file(filename)
+
+    def div_tool_button(self, widget):
+        if widget.get_active():
+            print 'TODO assign div tool'
+    def auto_tool_button(self, widget):
+        if widget.get_active():
+            print 'TODO assign auto tool'
+    def select_tool_button(self, widget):
+        if widget.get_active():
+            print 'TODO assign select tool'
+    def delete_event(self, widget, event, data=None):
+        return False
+    def destroy(self, widget, data=None):
+        gtk.main_quit()
 
 def perimeter(x1, y1, x2, y2):
     '''Generator for each x,y position in a rectangular perimeter'''
@@ -96,6 +140,9 @@ def main():
                 screen.blit(image, area, area)
 
 if __name__ == '__main__':
-    main()
-    print 'Bye'
+    try:
+        app = Application()
+        app.main()
+    except KeyboardInterrupt:
+        print 'Bye'
 
