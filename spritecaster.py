@@ -15,12 +15,14 @@ class Application(object):
             'on_div_tool_button_toggled':   self.div_tool_button,
             'on_select_tool_button_toggled':self.select_tool_button,
             'on_drawingarea1_expose_event': self.draw_area_draw,
+            'on_drawingarea1_button_press_event':
+                                            self.draw_area_button,
             'on_open_command':              self.do_open,
         })
         self.drawing_area = self.glade.get_widget('drawingarea1')
 
     pic = None
-    def draw_area_draw(self, widget, event, data=None):
+    def draw_area_draw(self, widget, event, *data):
         if self.pic:
             area = event.area
             window = widget.window
@@ -28,6 +30,10 @@ class Application(object):
                 area.x, area.y, area.x, area.y,
                 min(area.width, self.pic.get_width()),
                 min(area.height, self.pic.get_height()))
+
+    def draw_area_button(self, widget, event, *data):
+        if self.pic:
+            print self.myimage.get_at(event.x, event.y)
 
     def main(self):
         gtk.main()
@@ -39,6 +45,7 @@ class Application(object):
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
             self.pic = gtk.gdk.pixbuf_new_from_file(filename)
+            self.myimage = MyImage(self.pic)
             self.drawing_area.queue_draw()
 
     def div_tool_button(self, widget):
@@ -50,9 +57,9 @@ class Application(object):
     def select_tool_button(self, widget):
         if widget.get_active():
             print 'TODO assign select tool'
-    def delete_event(self, widget, event, data=None):
+    def delete_event(self, widget, event, *data):
         return False
-    def destroy(self, widget, data=None):
+    def destroy(self, widget, *data):
         gtk.main_quit()
 
 def perimeter(x1, y1, x2, y2):
@@ -62,13 +69,37 @@ def perimeter(x1, y1, x2, y2):
     for n in range(1, x2-x1):   yield x2-n, y2
     for n in range(0, y2-y1):   yield x1,   y2-n
 
+def in_bounds(w, h):
+    def closure(pos):
+        w, h = pos
+        return (x>=0)and(x<w)and(y>=0)and(y<h)
+
+class MyImage(object):
+    '''This provides a convenient abstraction for image processing so that
+    in the future if I change the underlying technology, the image processing
+    code doesn't need to change.'''
+    # It should be noted, however, that I would still like to replace this
+    # with a C-coded Python module
+    def __init__(self, pixbuf):
+        if not isinstance(pixbuf, gtk.gdk.Pixbuf):
+            raise TypeError('constructor argument must be gtk.gdk.Pixbuf')
+        self.pbuf = pixbuf
+        self.pxdata = pixbuf.get_pixels()
+    def get_width(self): return self.pbuf.get_width()
+    def get_height(self): return self.pbuf.get_height()
+    def get_at(self, x, y):
+        size = self.pbuf.get_bits_per_sample() / 8 * self.pbuf.get_n_channels()
+        pos = int(x * size + y * self.pbuf.get_rowstride())
+        return tuple(ord(c)for c in self.pxdata[pos:pos+size])
+
 def identify_rect(image, colorkey, pos):
     '''Returns (x,y),(w,h) for a the largest rectangular perimeter
     containing at least one non-transparent pixel, but which is smaller
     than the smallest rectangular perimeter containing only transparent
     pixels, such that the pixel at position `pos` is contained in the
     first rectangle, and the first rectangle is contained in the second'''
-    r = image.get_rect()
+    w = image.get_width()
+    h = image.get_height()
     x, y = pos
     x1, y1, x2, y2 = x, y, x+1, y+1
 
@@ -79,7 +110,7 @@ def identify_rect(image, colorkey, pos):
     # The search for the sprite begins...
     while True:
         # r.collidepoint filtration rejects pixels outside of the image
-        for x,y in filter(r.collidepoint, perimeter(x1, y1, x2, y2)):
+        for x,y in filter(in_bounds(w, h), perimeter(x1, y1, x2, y2)):
             # check for transparent area
             color = image.get_at((x,y))
             if color != colorkey:
