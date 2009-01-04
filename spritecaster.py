@@ -22,10 +22,11 @@ class Application(object):
     def draw_area_draw(self, widget, event, data=None):
         if self.pic:
             area = event.area
-            print area.x, area.y, area.width, area.height
-            widget.window.draw_pixbuf(widget.window.new_gc(), self.pic,
-                area.x, area.y, area.x, area.y, area.width, area.height)
-            print 'draw_pixbuf() returned!'
+            window = widget.window
+            window.draw_pixbuf(window.new_gc(), self.pic,
+                area.x, area.y, area.x, area.y,
+                min(area.width, self.pic.get_width()),
+                min(area.height, self.pic.get_height()))
 
     def main(self):
         gtk.main()
