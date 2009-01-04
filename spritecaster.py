@@ -17,6 +17,7 @@ class Application(object):
             'on_drawingarea1_expose_event': self.draw_area_draw,
             'on_open_command':              self.do_open,
         })
+        self.drawing_area = self.glade.get_widget('drawingarea1')
 
     pic = None
     def draw_area_draw(self, widget, event, data=None):
@@ -38,6 +39,7 @@ class Application(object):
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
             self.pic = gtk.gdk.pixbuf_new_from_file(filename)
+            self.drawing_area.queue_draw()
 
     def div_tool_button(self, widget):
         if widget.get_active():
