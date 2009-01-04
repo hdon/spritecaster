@@ -22,8 +22,10 @@ class Application(object):
     def draw_area_draw(self, widget, event, data=None):
         if self.pic:
             area = event.area
+            print area.x, area.y, area.width, area.height
             widget.window.draw_pixbuf(widget.window.new_gc(), self.pic,
                 area.x, area.y, area.x, area.y, area.width, area.height)
+            print 'draw_pixbuf() returned!'
 
     def main(self):
         gtk.main()
