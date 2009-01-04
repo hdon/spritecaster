@@ -29,9 +29,27 @@ placing related tiles near each other, with respect to macro-tile
 graphics like tall trees or whatever that need to take up more than one 
 tile.
 
+Design and visualize animations and sprite movement immediately. 
+Spritecaster does *not* write your game for you, so the ability to see 
+your game "happen" in Spritecaster is extremely limited, but if your 
+application can dynamically load data files on-the-fly, you can sit 
+Spritecaster side-by-side with your application and tweak the duration 
+of individual frames within the animation, or other subtle aspects of 
+your game's animations. Spritecaster does *not* write your game for you, 
+however it does challenge the ideas you may have about what parts of 
+game design can rightfully be considered "art" and what parts cannot! 
+Spritecaster thinks a little bit more can be done from the artist's 
+chair than what you probably thought before you used Spritecaster!
+
 Artist-friendly tool for designing simple sprite-related game mechanics: 
 Design your hitboxes and missile-spawn vectors from the same graphical 
 environment you design your character animation in!
+
+Build assets that respond to rich ontologies of signals such as "jump," 
+"stomp," "win," "hurt," and "die!" Design sprites that can be picked up 
+and used by game developers immediately no matter what their intentions 
+for their games are, because with rich message ontologies your sprites 
+can be ready to react to a wide variety of situations!
 
 Request for discussion:
 http://www.idevgames.com/forum/showthread.php?t=16489
