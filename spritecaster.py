@@ -46,6 +46,10 @@ class Application(object):
         self.sprites_view.append_column(gtk.TreeViewColumn('Name',
             gtk.CellRendererText(), text = 0))
 
+        # Create a pixbuf column
+        self.sprites_view.append_column(gtk.TreeViewColumn('Preview',
+            gtk.CellRendererPixbuf(), pixbuf = 1))
+
     def draw_area_draw(self, widget, event, *data):
         '''Redraws the contents of drawingarea1, our main work area'''
         if self.pic:
@@ -61,10 +65,13 @@ class Application(object):
         if self.pic:
             #print self.myimage.get_at(event.x, event.y)
             try: 
-                r = identify_rect(self.myimage, (0,255,0),
+                (x,y),(w,h) = identify_rect(self.myimage, (0,255,0),
                     (int(event.x), int(event.y)))
                 i = self.sprites.append()
-                self.sprites.set_value(i, 0, str(r))
+                self.sprites.set_value(i, 0, 'untitled')
+                self.sprites.set_value(i, 1,
+                    self.pic.subpixbuf(x, y, w-1, h-1))
+
                 # Outline sprite
                 #self.pic.draw_lines(self.pic.new_gc(),
                 #    expand_rect_2to4_points(r))
