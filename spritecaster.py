@@ -3,7 +3,13 @@ bgcolor = 200,255,200
 boxcolor = 255,255,255
 wirecolor = 0,255,255
 
-import gtk, gtk.glade as glade
+import gtk, gtk.gdk as gdk, gtk.glade as glade, gobject
+
+def expand_rect_2to4_points(p1, p2):
+    return p1, (p1[0],p2[1]), p2, (p2[0],p1[1])
+
+def expand_rect_2to4_dimensions(p1, p2):
+    return p1, p2, p2[0]-p1[0], p2[1]-p1[1]
 
 class Application(object):
     def __init__(self):
@@ -21,8 +27,27 @@ class Application(object):
         })
         self.drawing_area = self.glade.get_widget('drawingarea1')
 
-    pic = None
+        # Currently loaded source image (TODO more than one!!!)
+        self.pic = None
+
+        # Default tool (what the mouse is doing)
+        self.tool = 'select'
+
+        # Instantiate GTK abstractions for various collections represented
+        # by GUI widgets
+        self.sprites = gtk.ListStore(gobject.TYPE_STRING, gdk.Pixbuf)
+
+        # Bind the sprite list model to the sprite list view
+        self.sprites_view = self.glade.get_widget('sprite_tree_view')
+        self.sprites_view.set_model(self.sprites)
+
+        # Create a text column for the tree view. Bind its values ('text')
+        # to column 0 (text = 0) in 'sprites'
+        self.sprites_view.append_column(gtk.TreeViewColumn('Name',
+            gtk.CellRendererText(), text = 0))
+
     def draw_area_draw(self, widget, event, *data):
+        '''Redraws the contents of drawingarea1, our main work area'''
         if self.pic:
             area = event.area
             window = widget.window
@@ -32,31 +57,46 @@ class Application(object):
                 min(area.height, self.pic.get_height()))
 
     def draw_area_button(self, widget, event, *data):
+        '''Mouse button handler for drawingarea1, our main work area'''
         if self.pic:
-            print self.myimage.get_at(event.x, event.y)
+            #print self.myimage.get_at(event.x, event.y)
+            try: 
+                r = identify_rect(self.myimage, (0,255,0),
+                    (int(event.x), int(event.y)))
+                i = self.sprites.append()
+                self.sprites.set_value(i, 0, str(r))
+                # Outline sprite
+                #self.pic.draw_lines(self.pic.new_gc(),
+                #    expand_rect_2to4_points(r))
+                # Update drawing area
+                #self.drawing_area.queue_draw_area(
+                #    expand_rect_2to4_dimensions(r))
+            except IndexError:
+                print 'empty image region'
 
     def main(self):
         gtk.main()
 
     def do_open(self, widget, *data):
+        '''Invokes the Open File dialog'''
         dialog = self.glade.get_widget('filechooserdialog1')
         response = dialog.run()
         dialog.hide()
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
-            self.pic = gtk.gdk.pixbuf_new_from_file(filename)
+            self.pic = gdk.pixbuf_new_from_file(filename)
             self.myimage = MyImage(self.pic)
             self.drawing_area.queue_draw()
 
     def div_tool_button(self, widget):
         if widget.get_active():
-            print 'TODO assign div tool'
+            self.tool = 'divider'
     def auto_tool_button(self, widget):
         if widget.get_active():
-            print 'TODO assign auto tool'
+            self.tool = 'auto'
     def select_tool_button(self, widget):
         if widget.get_active():
-            print 'TODO assign select tool'
+            self.tool = 'select'
     def delete_event(self, widget, event, *data):
         return False
     def destroy(self, widget, *data):
@@ -81,13 +121,14 @@ class MyImage(object):
     # It should be noted, however, that I would still like to replace this
     # with a C-coded Python module
     def __init__(self, pixbuf):
-        if not isinstance(pixbuf, gtk.gdk.Pixbuf):
-            raise TypeError('constructor argument must be gtk.gdk.Pixbuf')
+        if not isinstance(pixbuf, gdk.Pixbuf):
+            raise TypeError('constructor argument must be gdk.Pixbuf')
         self.pbuf = pixbuf
         self.pxdata = pixbuf.get_pixels()
     def get_width(self): return self.pbuf.get_width()
     def get_height(self): return self.pbuf.get_height()
-    def get_at(self, x, y):
+    def get_at(self, pos):
+        x, y = pos
         size = self.pbuf.get_bits_per_sample() / 8 * self.pbuf.get_n_channels()
         pos = int(x * size + y * self.pbuf.get_rowstride())
         return tuple(ord(c)for c in self.pxdata[pos:pos+size])
