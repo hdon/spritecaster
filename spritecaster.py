@@ -111,8 +111,9 @@ def perimeter(x1, y1, x2, y2):
 
 def in_bounds(w, h):
     def closure(pos):
-        w, h = pos
+        x, y = pos
         return (x>=0)and(x<w)and(y>=0)and(y<h)
+    return closure
 
 class MyImage(object):
     '''This provides a convenient abstraction for image processing so that
