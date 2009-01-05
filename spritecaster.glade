@@ -246,7 +246,7 @@
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">Select</property>
 	      <property name="use_underline">True</property>
-	      <property name="stock_id">gtk-color-picker</property>
+	      <property name="stock_id">gtk-execute</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
@@ -264,7 +264,7 @@
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">Auto</property>
 	      <property name="use_underline">True</property>
-	      <property name="stock_id">gtk-color-picker</property>
+	      <property name="stock_id">gtk-execute</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
@@ -283,7 +283,7 @@
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">Divide</property>
 	      <property name="use_underline">True</property>
-	      <property name="stock_id">gtk-color-picker</property>
+	      <property name="stock_id">gtk-execute</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
