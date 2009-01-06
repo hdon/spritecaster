@@ -65,7 +65,8 @@ class Application(object):
         if self.pic:
             #print self.myimage.get_at(event.x, event.y)
             try: 
-                (x,y),(w,h) = identify_rect(self.myimage, (0,255,0),
+                (x,y),(w,h) = identify_rect(
+                    self.myimage, self.myimage.colorkey,
                     (int(event.x), int(event.y)))
                 i = self.sprites.append()
                 self.sprites.set_value(i, 0, 'untitled')
@@ -133,6 +134,7 @@ class MyImage(object):
             raise TypeError('constructor argument must be gdk.Pixbuf')
         self.pbuf = pixbuf
         self.pxdata = pixbuf.get_pixels()
+        self.colorkey = self.get_at((0,0))
     def get_width(self): return self.pbuf.get_width()
     def get_height(self): return self.pbuf.get_height()
     def get_at(self, pos):
@@ -163,12 +165,12 @@ def identify_rect(image, colorkey, pos):
             # check for transparent area
             color = image.get_at((x,y))
             if color != colorkey:
-                if x <= x1: x1 -= 1
-                elif x >= x2: x2 += 1
-                if y <= y1: y1 -= 1
-                elif y >= y2: y2 += 1
+                if   (x <= x1) and (x1 >= 0): x1 -= 1
+                elif (x >= x2) and (x2 < w ): x2 += 1
+                if   (y <= y1) and (y1 >= 0): y1 -= 1
+                elif (y >= y2) and (y2 < h ): y2 += 1
                 break
-        if color == colorkey:
+        if (color == colorkey) or ((x1<=0)and(x2>=w-1)and(y1<=0)and(y2>=h-1)):
             return (x1+1,y1+1),(x2-x1,y2-y1)
 
 #def identify_blob(image, colorkey, pos):
