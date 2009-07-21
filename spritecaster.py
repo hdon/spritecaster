@@ -11,10 +11,18 @@ def expand_rect_2to4_points(p1, p2):
 def expand_rect_2to4_dimensions(p1, p2):
     return p1, p2, p2[0]-p1[0], p2[1]-p1[1]
 
+class Undoable(object):
+    def __init__(self, desc, func):
+        self.desc = desc
+        self.func = func
+    def call(self):
+        return self.func()
+
 class Application(object):
     def __init__(self):
         self.glade = glade.XML('spritecaster.glade')
         self.glade.signal_autoconnect({
+            'on_undo_action':               self.do_undo,
             'on_window1_delete_event':      self.delete_event,
             'on_window1_destroy_event':     self.destroy,
             'on_auto_button_toggled':       self.auto_tool_button,
@@ -50,6 +58,10 @@ class Application(object):
         self.sprites_view.append_column(gtk.TreeViewColumn('Preview',
             gtk.CellRendererPixbuf(), pixbuf = 1))
 
+        # Create a stack of undoable actions
+        self.undo_stack = list()
+        # TODO disable UNDO button
+
     def draw_area_draw(self, widget, event, *data):
         '''Redraws the contents of drawingarea1, our main work area'''
         if self.pic:
@@ -62,25 +74,30 @@ class Application(object):
 
     def draw_area_button(self, widget, event, *data):
         '''Mouse button handler for drawingarea1, our main work area'''
-        if self.pic:
-            #print self.myimage.get_at(event.x, event.y)
-            try: 
-                (x,y),(w,h) = identify_rect(
-                    self.myimage, self.myimage.colorkey,
-                    (int(event.x), int(event.y)))
-                i = self.sprites.append()
-                self.sprites.set_value(i, 0, 'untitled')
-                self.sprites.set_value(i, 1,
-                    self.pic.subpixbuf(x, y, w-1, h-1))
+        if 1:
+        # TODO if event.type == gdk.GDK_BUTTON_PRESS:
+            if self.pic:
+                #print self.myimage.get_at(event.x, event.y)
+                try: 
+                    (x,y),(w,h) = identify_rect(
+                        self.myimage, self.myimage.colorkey,
+                        (int(event.x), int(event.y)))
+                    i = self.sprites.append()
+                    self.sprites.set_value(i, 0, 'untitled')
+                    self.sprites.set_value(i, 1,
+                        self.pic.subpixbuf(x, y, w-1, h-1))
+                    def undo():
+                        self.sprites.remove(i)
+                    self.undo_stack.append(Undoable('d-bag', undo))
 
-                # Outline sprite
-                #self.pic.draw_lines(self.pic.new_gc(),
-                #    expand_rect_2to4_points(r))
-                # Update drawing area
-                #self.drawing_area.queue_draw_area(
-                #    expand_rect_2to4_dimensions(r))
-            except IndexError:
-                print 'empty image region'
+                    # Outline sprite
+                    #self.pic.draw_lines(self.pic.new_gc(),
+                    #    expand_rect_2to4_points(r))
+                    # Update drawing area
+                    #self.drawing_area.queue_draw_area(
+                    #    expand_rect_2to4_dimensions(r))
+                except IndexError:
+                    print 'empty image region'
 
     def main(self):
         gtk.main()
@@ -88,6 +105,7 @@ class Application(object):
     def do_open(self, widget, *data):
         '''Invokes the Open File dialog'''
         dialog = self.glade.get_widget('filechooserdialog1')
+        # TODO GtkWarning: gtk_tree_model_get_iter: assertion `path != NULL' failed
         response = dialog.run()
         dialog.hide()
         if response == gtk.RESPONSE_OK:
@@ -95,6 +113,15 @@ class Application(object):
             self.pic = gdk.pixbuf_new_from_file(filename)
             self.myimage = MyImage(self.pic)
             self.drawing_area.queue_draw()
+            # Reinitialize undo stack
+            self.undo_stack = list()
+            # TODO disable UNDO button
+
+    def do_undo(self, widget):
+      if len(self.undo_stack) == 0:
+        print 'undo stack empty'
+        return
+      self.undo_stack.pop().call()
 
     def div_tool_button(self, widget):
         if widget.get_active():
