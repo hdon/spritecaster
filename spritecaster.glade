@@ -308,7 +308,7 @@
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
 	      <property name="active">True</property>
-	      <signal name="toggled" handler="on_select_tool_button_toggled" last_modification_time="Sun, 04 Jan 2009 04:44:18 GMT"/>
+	      <signal name="toggled" handler="on_tool_change" last_modification_time="Tue, 21 Jul 2009 03:33:19 GMT"/>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>
@@ -317,9 +317,9 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkRadioToolButton" id="auto_button">
+	    <widget class="GtkRadioToolButton" id="radiotoolbutton1">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">Auto</property>
+	      <property name="label" translatable="yes">Mask</property>
 	      <property name="use_underline">True</property>
 	      <property name="stock_id">gtk-execute</property>
 	      <property name="visible_horizontal">True</property>
@@ -327,7 +327,7 @@
 	      <property name="is_important">False</property>
 	      <property name="active">False</property>
 	      <property name="group">select_tool_button</property>
-	      <signal name="toggled" handler="on_auto_button_toggled" last_modification_time="Sun, 04 Jan 2009 04:42:00 GMT"/>
+	      <signal name="toggled" handler="on_tool_change" last_modification_time="Tue, 21 Jul 2009 03:33:26 GMT"/>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>
@@ -336,22 +336,30 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkRadioToolButton" id="div_tool_button">
+	    <placeholder/>
+	  </child>
+
+	  <child>
+	    <widget class="GtkToolItem" id="toolitem3">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">Divide</property>
-	      <property name="use_underline">True</property>
-	      <property name="stock_id">gtk-execute</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
-	      <property name="active">False</property>
-	      <property name="group">select_tool_button</property>
-	      <signal name="toggled" handler="on_div_tool_button_toggled" last_modification_time="Sun, 04 Jan 2009 04:48:22 GMT"/>
+
+	      <child>
+		<widget class="GtkVSeparator" id="vseparator3">
+		  <property name="visible">True</property>
+		</widget>
+	      </child>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>
-	      <property name="homogeneous">True</property>
+	      <property name="homogeneous">False</property>
 	    </packing>
+	  </child>
+
+	  <child>
+	    <placeholder/>
 	  </child>
 	</widget>
 	<packing>
@@ -378,7 +386,8 @@
 		  <property name="visible">True</property>
 		  <property name="events">GDK_BUTTON_PRESS_MASK</property>
 		  <signal name="expose_event" handler="on_drawingarea1_expose_event" last_modification_time="Sun, 04 Jan 2009 04:34:54 GMT"/>
-		  <signal name="button_press_event" handler="on_drawingarea1_button_press_event" last_modification_time="Sun, 04 Jan 2009 05:59:46 GMT"/>
+		  <signal name="button_press_event" handler="on_tool_activity" last_modification_time="Tue, 21 Jul 2009 03:23:35 GMT"/>
+		  <signal name="button_release_event" handler="on_tool_activity" last_modification_time="Tue, 21 Jul 2009 03:23:40 GMT"/>
 		</widget>
 		<packing>
 		  <property name="shrink">True</property>

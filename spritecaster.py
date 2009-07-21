@@ -25,12 +25,9 @@ class Application(object):
             'on_undo_action':               self.do_undo,
             'on_window1_delete_event':      self.delete_event,
             'on_window1_destroy_event':     self.destroy,
-            'on_auto_button_toggled':       self.auto_tool_button,
-            'on_div_tool_button_toggled':   self.div_tool_button,
-            'on_select_tool_button_toggled':self.select_tool_button,
+            'on_tool_change'               :self.tool_change,
             'on_drawingarea1_expose_event': self.draw_area_draw,
-            'on_drawingarea1_button_press_event':
-                                            self.draw_area_button,
+            'on_tool_activity':             self.tool_activity,
             'on_open_command':              self.do_open,
         })
         self.drawing_area = self.glade.get_widget('drawingarea1')
@@ -72,8 +69,11 @@ class Application(object):
                 min(area.width, self.pic.get_width()),
                 min(area.height, self.pic.get_height()))
 
-    def draw_area_button(self, widget, event, *data):
-        '''Mouse button handler for drawingarea1, our main work area'''
+    def tool_activity(self, widget, event, *data):
+        getattr(self, self.tool+'_tool_activity')(widget, event, *data)
+
+    def select_tool_activity(self, widget, event, *data):
+        '''drawingarea1 event handler for "select" tool'''
         if 1:
         # TODO if event.type == gdk.GDK_BUTTON_PRESS:
             if self.pic:
@@ -99,6 +99,9 @@ class Application(object):
                 except IndexError:
                     print 'empty image region'
 
+    def mask_tool_activity(self, widget, event, *data):
+        '''drawingarea1 event handler for "mask" tool'''
+        
     def main(self):
         gtk.main()
 
@@ -123,15 +126,8 @@ class Application(object):
         return
       self.undo_stack.pop().call()
 
-    def div_tool_button(self, widget):
-        if widget.get_active():
-            self.tool = 'divider'
-    def auto_tool_button(self, widget):
-        if widget.get_active():
-            self.tool = 'auto'
-    def select_tool_button(self, widget):
-        if widget.get_active():
-            self.tool = 'select'
+    def tool_change(self, widget):
+        self.tool = widget.get_label().lower()
     def delete_event(self, widget, event, *data):
         return False
     def destroy(self, widget, *data):
