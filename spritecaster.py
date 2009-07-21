@@ -59,6 +59,9 @@ class Application(object):
         self.undo_stack = list()
         # TODO disable UNDO button
 
+        # Counter for things called "untitled"
+        self.untitled = 0
+
     def draw_area_draw(self, widget, event, *data):
         '''Redraws the contents of drawingarea1, our main work area'''
         if self.pic:
@@ -83,7 +86,8 @@ class Application(object):
                         self.myimage, self.myimage.colorkey,
                         (int(event.x), int(event.y)))
                     i = self.sprites.append()
-                    self.sprites.set_value(i, 0, 'untitled')
+                    self.untitled += 1
+                    self.sprites.set_value(i, 0, 'untitled %d'%self.untitled)
                     self.sprites.set_value(i, 1,
                         self.pic.subpixbuf(x, y, w-1, h-1))
                     def undo():
