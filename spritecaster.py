@@ -3,7 +3,7 @@ bgcolor = 200,255,200
 boxcolor = 255,255,255
 wirecolor = 0,255,255
 
-import gtk, gtk.gdk as gdk, gtk.glade as glade, gobject
+import gtk, gtk.gdk as gdk, gtk.glade as glade, gobject, os, webkit
 
 def expand_rect_2to4_points(p1, p2):
     return p1, (p1[0],p2[1]), p2, (p2[0],p1[1])
@@ -29,8 +29,15 @@ class Application(object):
             'on_drawingarea1_expose_event': self.draw_area_draw,
             'on_tool_activity':             self.tool_activity,
             'on_open_command':              self.do_open,
+            'on_action_new':                self.new_project,
+            'on_magic1_activate':           self.do_magic,
+            'on_openlocation_activate':     self.do_openlocation,
         })
         self.drawing_area = self.glade.get_widget('drawingarea1')
+
+        # Currently loaded project
+        self.project_path = None
+        self.project_file = None
 
         # Currently loaded source image (TODO more than one!!!)
         self.pic = None
@@ -62,6 +69,21 @@ class Application(object):
         # Counter for things called "untitled"
         self.untitled = 0
 
+    def do_magic(self, widget, *data):
+        '''Magic is useful for debugging new features before adding user interfaces for them'''
+
+    def do_openlocation(self, widget, *data):
+        dlg = self.glade.get_widget('openlocationdialog')
+        if dlg.run() == gtk.RESPONSE_OK:
+            url = self.glade.get_widget('openlocationlocation').get_text()
+            self.glade.get_widget('drawingarea1').hide()
+            if not hasattr(self, 'webkitview'):
+                self.webkitview = webkit.WebView()
+            self.glade.get_widget('hpaned1').add1(self.webkitview)
+            self.webkitview.show()
+            self.webkitview.open(url)
+        dlg.hide()
+
     def draw_area_draw(self, widget, event, *data):
         '''Redraws the contents of drawingarea1, our main work area'''
         if self.pic:
@@ -82,17 +104,25 @@ class Application(object):
             if self.pic:
                 #print self.myimage.get_at(event.x, event.y)
                 try: 
+                    # Seek out the sprite rect
                     (x,y),(w,h) = identify_rect(
                         self.myimage, self.myimage.colorkey,
                         (int(event.x), int(event.y)))
-                    i = self.sprites.append()
+                    # Instantiate new pixbuf from sprite rect
+                    pic = self.pic.subpixbuf(x, y, w-1, h-1)
+                    # Name the sprite
                     self.untitled += 1
-                    self.sprites.set_value(i, 0, 'untitled %d'%self.untitled)
-                    self.sprites.set_value(i, 1,
-                        self.pic.subpixbuf(x, y, w-1, h-1))
+                    name = 'untitled %d' % self.untitled
+                    # Insert sprite into sprites list
+                    i = self.sprites.append()
+                    self.sprites.set_value(i, 0, name)
+                    self.sprites.set_value(i, 1, pic)
+                    # Save sprite in project directory
+                    pic.save(os.path.join(self.project_path, 'sprites', '%s.png'%name), "png")
                     def undo():
                         self.sprites.remove(i)
                     self.undo_stack.append(Undoable('d-bag', undo))
+
 
                     # Outline sprite
                     #self.pic.draw_lines(self.pic.new_gc(),
@@ -109,6 +139,33 @@ class Application(object):
     def main(self):
         gtk.main()
 
+    def alert(self, message):
+      print message + '\a'
+
+    def new_project(self, *ignored):
+        '''Invokes the Create A New Project Directory dialog'''
+        dialog = self.glade.get_widget('project_filechooser_dialog')
+        # TODO GtkWarning: gtk_tree_model_get_iter: assertion `path != NULL' failed
+        response = dialog.run()
+        dialog.hide()
+        if response == gtk.RESPONSE_OK:
+            self.project_path = dialog.get_filename()
+            self.project_file = open(os.path.join(self.project_path, 'spritecaster.project'), 'r+')
+            self.project_file.write('beginning session\n')
+            os.mkdir(os.path.join(self.project_path, 'sprites'))
+      
+    def close_project(self, *ignored):
+        if self.project_file:
+            self.project_file.write('ending session\n')
+            self.project_file.close()
+            self.project_file = None
+        self.project_path = None
+        self.pic = None
+        # TODO empty out the GUI stuff
+        # Reinitialize undo stack
+        self.undo_stack = list()
+        # TODO disable UNDO button
+      
     def do_open(self, widget, *data):
         '''Invokes the Open File dialog'''
         dialog = self.glade.get_widget('filechooserdialog1')
@@ -117,12 +174,23 @@ class Application(object):
         dialog.hide()
         if response == gtk.RESPONSE_OK:
             filename = dialog.get_filename()
-            self.pic = gdk.pixbuf_new_from_file(filename)
-            self.myimage = MyImage(self.pic)
-            self.drawing_area.queue_draw()
-            # Reinitialize undo stack
-            self.undo_stack = list()
-            # TODO disable UNDO button
+            # Is the user opening a project?
+            if os.path.basename(filename) == 'spritecaster.project':
+                self.close_project()
+                self.project_path = os.path.dirname(filename)
+                self.project_file = open(filename, 'r+')
+                print self.project_file.read()
+                self.project_file.write('opening session again\n')
+
+            # Not a project; must be an image
+            else:
+                # If we don't currently have a project open, this must only open a project!
+                if not self.project_path and filename != 'spritecaster.project':
+                  self.alert('No project currently open. You must open or create a new project!')
+                  return
+                self.pic = gdk.pixbuf_new_from_file(filename)
+                self.myimage = MyImage(self.pic)
+                self.drawing_area.queue_draw()
 
     def do_undo(self, widget):
       if len(self.undo_stack) == 0:
